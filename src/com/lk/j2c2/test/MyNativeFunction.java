@@ -7,5 +7,4 @@ import java.util.function.Function;
  */
 public class MyNativeFunction implements Function<int[], int[]> {
     public native int[] apply(int[] a) ;
-    public native void printf();
 }

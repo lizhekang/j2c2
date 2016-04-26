@@ -33,15 +33,15 @@ class Func {
         Map<Integer, FuncValue> values;
     }
 
-    private class FuncValue {
+    class FuncValue {
         String name;
         String kind;
-        boolean define;
+        boolean defined;
 
         FuncValue(String name, String kind) {
             this.name = name;
             this.kind = kind;
-            this.define = false;
+            this.defined = false;
         }
     }
 
@@ -182,7 +182,7 @@ class Func {
                 if(VALUES.get(String.valueOf(c)) != null) {
                     res += VALUES.get(String.valueOf(c));
                     for(int i=0; i<counter; i++) {
-                        res += "[]";
+                        res += "*";
                     }
                 }else {
                     throw new FuncException("无法识别类型");
@@ -274,7 +274,9 @@ class Func {
                 beginTableFlag = true;
 
                 String[] tsa = s.split("\\s+");
-                functionInfo.values.put(new Integer(tsa[2]), new FuncValue(tsa[3], tsa[4]));
+                String t = tsa[4].substring(tsa[4].length() - 1);
+                String kind = VALUES.get(t) == null ? null : tsa[4].substring(0, tsa[4].length() - 1) + VALUES.get(t);
+                functionInfo.values.put(new Integer(tsa[2]), new FuncValue(tsa[3], kind));
             }else if(beginFlag && beginTableFlag) {
                 break;
             }
@@ -289,13 +291,18 @@ class Func {
         functionHead += functionInfo.returnKind + " " + functionInfo.functionName + "(";
         for(int i=0; i<functionInfo.argKinds.length; i++) {
             functionHead += functionInfo.argKinds[i] + " " + functionInfo.values.get(i+1).name;
-            functionInfo.values.get(i+1).define = true;
+            functionInfo.values.get(i+1).defined = true;
             if(i != functionInfo.argKinds.length - 1) {
                 functionHead += ", ";
             }
         }
         functionHead += ")\n";
         functionBody += "{\n";
+
+        //获取函数体
+        J2c2Runtime rt = new J2c2Runtime(functionInfo.codes, functionInfo.values);
+        functionBody += rt.run();
+
         functionBody += "}\n";
 
         System.out.println(functionHead + functionBody);
